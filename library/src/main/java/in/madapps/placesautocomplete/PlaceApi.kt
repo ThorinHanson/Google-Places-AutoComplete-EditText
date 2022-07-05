@@ -36,6 +36,7 @@ class PlaceAPI private constructor(
     try {
       val sb = buildApiUrl(PLACES_API_BASE + TYPE_AUTOCOMPLETE + OUT_JSON)
       sb.append("&input=" + URLEncoder.encode(input, "utf8"))
+      sb.append("&components=country:us|country:ca")
       val url = URL(sb.toString())
       conn = url.openConnection() as HttpURLConnection
       val inputStreamReader = InputStreamReader(conn.inputStream)
