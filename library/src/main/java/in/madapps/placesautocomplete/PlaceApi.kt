@@ -23,7 +23,7 @@ import java.net.URLEncoder
  * Created by mukeshsolanki on 28/02/19.
  */
 class PlaceAPI private constructor(
-  var apiKey: String?, var sessionToken: String?, var appContext: Context
+  var apiKey: String?, var sessionToken: String?, var countryCodes: List<String>?, var types: List<String>?, var appContext: Context
 ) {
   /**
    * Used to get details for the places api to be showed in the auto complete list
@@ -36,7 +36,22 @@ class PlaceAPI private constructor(
     try {
       val sb = buildApiUrl(PLACES_API_BASE + TYPE_AUTOCOMPLETE + OUT_JSON)
       sb.append("&input=" + URLEncoder.encode(input, "utf8"))
-      sb.append("&components=country:us|country:ca")
+      countryCodes?.let { codes ->
+        var param = "&components="
+        codes.forEach {  code ->
+          param += "country:${code}|"
+        }
+        sb.append(param)
+      }
+      types?.let { types ->
+        var param = "&types="
+        types.forEach { type ->
+          param += "${type}|"
+        }
+        sb.append(param)
+      }
+
+
       val url = URL(sb.toString())
       conn = url.openConnection() as HttpURLConnection
       val inputStreamReader = InputStreamReader(conn.inputStream)
@@ -254,12 +269,24 @@ extendlog(jsonObj.toString())
    */
   data class Builder(
     private var apiKey: String? = null,
-    private var sessionToken: String? = null
+    private var sessionToken: String? = null,
+    private var countryCodes: List<String>? = null,
+    private var types: List<String>? = null
   ) {
     /**
      * Sets the api key for the PlaceAPI
      */
     fun apiKey(apiKey: String) = apply { this.apiKey = apiKey }
+
+    /**
+     * Sets the country codes for the PlaceAPI
+     */
+    fun countryCodes(codes: List<String>) = apply { this.countryCodes = codes }
+
+    /**
+     * Sets the types for the PlaceAPI
+     */
+    fun types(types: List<String>) = apply { this.types = types.take(5) }
 
     /**
      * Sets a unique session token for billing in the PlaceAPI
@@ -269,6 +296,6 @@ extendlog(jsonObj.toString())
     /**
      * Builds and creates an object of the PlaceAPI
      */
-    fun build(context: Context) = PlaceAPI(apiKey, sessionToken, context)
+    fun build(context: Context) = PlaceAPI(apiKey, sessionToken, countryCodes, types, context)
   }
 }
